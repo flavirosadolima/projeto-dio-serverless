@@ -1,0 +1,69 @@
+service: projeto-dio-serverless
+frameworkVersion: '2'
+configValidationMode: warn
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: dev
+  region: us-east-1
+  iam:
+    role:
+      name: MinhaFuncaoServerless
+      statments:
+      # Allow put, update, get e scan the 'newtable' table of dynamo
+        - Effect: Allow
+          Action: 
+             - dynamodb:PutItem
+             - dynamodb:UpdateItem
+             - dynamodb:GetItem
+             - dynamodb:scan
+          Resource:
+              - arn:aws:dynamodb:us-east-1:737677958987:table/NewTable
+
+functions:
+  hello:
+    handler: src/hello.handler
+    events:
+      - http:
+          path: /
+          method: get
+  insertItem:
+    handler: src/insertItem.handler
+    events:
+      - http:
+          path: /item
+          method: post
+  fetchItems:
+    handler: src/fetchItems.handler
+    events:
+      - http:
+          path: /items
+          method: get
+  fetchItem:
+    handler: src/fetchItem.handler
+    events:
+      - http:
+          path: /items/{id}
+          method: get
+  updateItem:
+    handler: src/updateItem.handler
+    events:
+      - http:
+          path: /items/{id}
+          method: put
+resources:
+  Resources:
+    ItemTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+          TableName: ItemTable
+          BillingMode: PAY_PER_REQUEST
+          AttributeDefinitions:
+            - AttributeName: id
+              AttributeType: S
+          KeySchema:
+            - AttributeName: id
+              KeyType: HASH
+
+
